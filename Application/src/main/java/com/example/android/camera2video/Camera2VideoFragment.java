@@ -75,6 +75,8 @@ public class Camera2VideoFragment extends Fragment
     private static final String TAG = "Camera2VideoFragment";
     private static final int REQUEST_VIDEO_PERMISSIONS = 1;
     private static final String FRAGMENT_DIALOG = "dialog";
+    private static final boolean ENABLE_PREVIEW = false;
+    private static final boolean ENABLE_AUDIO_REC = false;
 
     private static final String[] VIDEO_PERMISSIONS = {
             Manifest.permission.CAMERA,
@@ -189,7 +191,9 @@ public class Camera2VideoFragment extends Fragment
         @Override
         public void onOpened(@NonNull CameraDevice cameraDevice) {
             mCameraDevice = cameraDevice;
-            startPreview();
+            if (ENABLE_PREVIEW) {
+                startPreview();
+            }
             mCameraOpenCloseLock.release();
             if (null != mTextureView) {
                 configureTransform(mTextureView.getWidth(), mTextureView.getHeight());
@@ -579,7 +583,9 @@ public class Camera2VideoFragment extends Fragment
         if (null == activity) {
             return;
         }
-        mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        if (ENABLE_AUDIO_REC) {
+            mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        }
         mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
         mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
         if (mNextVideoAbsolutePath == null || mNextVideoAbsolutePath.isEmpty()) {
@@ -590,7 +596,9 @@ public class Camera2VideoFragment extends Fragment
         mMediaRecorder.setVideoFrameRate(30);
         mMediaRecorder.setVideoSize(mVideoSize.getWidth(), mVideoSize.getHeight());
         mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
-        mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+        if (ENABLE_AUDIO_REC) {
+            mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+        }
         int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
         switch (mSensorOrientation) {
             case SENSOR_ORIENTATION_DEFAULT_DEGREES:
@@ -624,8 +632,10 @@ public class Camera2VideoFragment extends Fragment
 
             // Set up Surface for the camera preview
             Surface previewSurface = new Surface(texture);
-            surfaces.add(previewSurface);
-            mPreviewBuilder.addTarget(previewSurface);
+            if (ENABLE_PREVIEW) {
+                surfaces.add(previewSurface);
+                mPreviewBuilder.addTarget(previewSurface);
+            }
 
             // Set up Surface for the MediaRecorder
             Surface recorderSurface = mMediaRecorder.getSurface();
@@ -689,7 +699,9 @@ public class Camera2VideoFragment extends Fragment
             Log.d(TAG, "Video saved: " + mNextVideoAbsolutePath);
         }
         mNextVideoAbsolutePath = null;
-        startPreview();
+        if (ENABLE_PREVIEW) {
+            startPreview();
+        }
     }
 
     /**
